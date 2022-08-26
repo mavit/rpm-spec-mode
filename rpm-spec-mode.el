@@ -87,7 +87,7 @@
 
 (defcustom rpm-spec-short-circuit nil
   "Skip straight to specified stage.
-(ie, skip all stages leading up to the specified stage).  Only valid
+\(ie, skip all stages leading up to the specified stage).  Only valid
 in \"%build\" and \"%install\" stage."
   :type 'boolean
   :group 'rpm-spec)
@@ -746,7 +746,7 @@ with no args, if that value is non-nil."
   (run-hooks 'rpm-spec-mode-hook))
 
 (defun rpm-command-filter (process string)
-  "Filter to process normal output."
+  "Filter to PROCESS normal output.  Add STRING as starting boundary."
   (with-current-buffer (process-buffer process)
     (save-excursion
       (goto-char (process-mark process))
@@ -767,7 +767,7 @@ If `rpm-change-log-uses-utc' is nil, \"today\" means the local time zone."
   (format-time-string "%a %b %d %Y" nil rpm-change-log-uses-utc))
 
 (defun rpm-goto-add-change-log-header ()
-  "Find change log and add header (if needed) for today"
+  "Find change log and add header (if needed) for today."
     (rpm-goto-section "changelog")
     (let* ((address (rpm-spec-user-mail-address))
            (fullname (or rpm-spec-user-full-name (user-full-name)))
@@ -781,7 +781,8 @@ If `rpm-change-log-uses-utc' is nil, \"today\" means the local time zone."
         (forward-line 2))))
 
 (defun rpm-add-change-log-entry (&optional change-log-entry)
-  "Find change log and add an entry for today."
+  "Find change log and add an entry for today.
+CHANGE-LOG-ENTRY will be used if provided."
   (interactive "sChange log entry: ")
   (save-excursion
     (rpm-goto-add-change-log-header)
@@ -801,7 +802,9 @@ If `rpm-change-log-uses-utc' is nil, \"today\" means the local time zone."
 ;;------------------------------------------------------------
 
 (defun rpm-insert-f (&optional filetype filename)
-  "Insert new \"%files\" entry."
+  "Insert new \"%files\" entry.
+If FILENAME is 1 or is not provided, it will be prompted for
+using FILETYPE to prompt the user."
   (save-excursion
     (and (rpm-goto-section "files") (rpm-end-of-section))
     (if (or (eq filename 1) (not filename))
@@ -816,32 +819,38 @@ If `rpm-change-log-uses-utc' is nil, \"today\" means the local time zone."
     (insert filetype)))
 
 (defun rpm-insert-file (&optional filename)
-  "Insert regular file."
+  "Insert regular file.
+Use FILENAME or, if interactive, prompt."
   (interactive "p")
   (rpm-insert-f "" filename))
 
 (defun rpm-insert-config (&optional filename)
-  "Insert config file."
+  "Insert config file.
+FILENAME is the config file."
   (interactive "p")
   (rpm-insert-f "%config " filename))
 
 (defun rpm-insert-doc (&optional filename)
-  "Insert doc file."
+  "Insert doc file.
+FILENAME is the doc file."
   (interactive "p")
   (rpm-insert-f "%doc " filename))
 
 (defun rpm-insert-ghost (&optional filename)
-  "Insert ghost file."
+  "Insert ghost file.
+FILENAME is the ghost file."
   (interactive "p")
   (rpm-insert-f "%ghost " filename))
 
 (defun rpm-insert-dir (&optional dirname)
-  "Insert directory."
+  "Insert directory.
+DIRNAME is the directory."
   (interactive "p")
   (rpm-insert-f "%dir " dirname))
 
 (defun rpm-insert-docdir (&optional dirname)
-  "Insert doc directory."
+  "Insert doc directory.
+DIRNAME is the directory."
   (interactive "p")
   (rpm-insert-f "%docdir " dirname))
 
@@ -854,7 +863,8 @@ controls whether case is significant."
     (completing-read prompt table pred require init hist)))
 
 (defun rpm-insert (&optional what file-completion)
-  "Insert given tag.  Use file-completion if argument is t."
+  "Insert given tag.  Use FILE-COMPLETION if argument is t.
+WHAT is the tag used."
   (beginning-of-line)
   (if (not what)
       (setq what (rpm-completing-read "Tag: " rpm-tags-list)))
@@ -877,6 +887,7 @@ controls whether case is significant."
         (insert insert-text (read-from-minibuffer (concat read-text)) "\n"))))))
 
 (defun rpm-topdir ()
+  "Use environment to get the topdir for RPMs."
   (or
    (getenv "RPM")
    (getenv "rpm")
@@ -886,7 +897,7 @@ controls whether case is significant."
    "/usr/src/RPM"))
 
 (defun rpm-insert-n (what &optional arg)
-  "Insert given tag with possible number."
+  "Insert given tag (WHAT) with possible number."
   (save-excursion
     (goto-char (point-max))
     (if (search-backward-regexp (concat "^" what "\\([0-9]*\\):") nil t)
@@ -900,7 +911,7 @@ controls whether case is significant."
       (insert what ": " (read-from-minibuffer (concat what "file: ")) "\n"))))
 
 (defun rpm-change (&optional what arg)
-  "Update given tag."
+  "Update given tag (WHAT)."
   (save-excursion
     (if (not what)
         (setq what (rpm-completing-read "Tag: " rpm-tags-list)))
@@ -934,7 +945,7 @@ controls whether case is significant."
         (message "%s number \"%s\" not found..." what number)))))
 
 (defun rpm-insert-group (group)
-  "Insert Group tag."
+  "Insert GROUP tag."
   (interactive (list (rpm-completing-read "Group: " rpm-group-tags-list)))
   (beginning-of-line)
   (insert "Group: " group "\n"))
@@ -978,6 +989,7 @@ controls whether case is significant."
 ;;------------------------------------------------------------
 
 (defun rpm-current-section nil
+  "Get the current section."
   (interactive)
   (save-excursion
     (rpm-forward-section)
@@ -1022,7 +1034,7 @@ Go to beginning of current section."
   (point))
 
 (defun rpm-goto-section (section)
-  "Move point to the beginning of the specified section;
+  "Move point to the beginning of the specified SECTION.
 leave point at previous location."
   (interactive (list (rpm-completing-read "Section: " rpm-section-list)))
   (push-mark)
@@ -1039,6 +1051,7 @@ leave point at previous location."
      (insert "\n%" section "\n"))))
 
 (defun rpm-mouse-goto-section (&optional section)
+  "Go to SECTION."
   (interactive
    (x-popup-menu
     nil
@@ -1056,13 +1069,14 @@ leave point at previous location."
              (goto-char (point-max))))))
 
 (defun rpm-insert-true-prefix ()
+  "Insert %{prefix}"
   (interactive)
   (insert "%{prefix}"))
 
 ;;------------------------------------------------------------
 
 (defun rpm-build (buildoptions)
-  "Build this RPM package."
+  "Build this RPM package with BUILDOPTIONS."
   (if (and (buffer-modified-p)
            (y-or-n-p (format "Buffer %s modified, save it? " (buffer-name))))
       (save-buffer))
@@ -1107,7 +1121,7 @@ leave point at previous location."
 	  (let ((topdir (expand-file-name default-directory)))
 	    (setq buildoptions
 		  (cons
-		   (concat "--define \"_topdir " 
+		   (concat "--define \"_topdir "
 			   (replace-regexp-in-string "/SPECS/$" "" topdir)
 			   "\"")
 		   buildoptions)))))
@@ -1118,7 +1132,7 @@ leave point at previous location."
 	  (concat (car lst) " " (list->string (cdr lst)))
 	(car lst)))
     (compilation-start (list->string (cons rpm-spec-build-command buildoptions)) 'rpmbuild-mode))
-  
+
   (if (and rpm-spec-sign-gpg (not rpm-no-gpg))
       (let ((build-proc (get-buffer-process
 			 (get-buffer
@@ -1192,7 +1206,7 @@ command."
         (if (yes-or-no-p (concat "Process `" (process-name process)
                                  "' running.  Kill it? "))
             (delete-process process)
-          (error "Cannot run two simultaneous processes ...")))))
+          (error "Cannot run two simultaneous processes")))))
 
 ;;------------------------------------------------------------
 
