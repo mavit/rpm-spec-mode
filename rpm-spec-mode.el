@@ -1,4 +1,4 @@
-;;; rpm-spec-mode.el --- RPM spec file editing commands for Emacs/XEmacs
+;;; rpm-spec-mode.el --- RPM spec mode for Emacs/XEmacs -*- lexical-binding:t -*-
 
 ;; Copyright (C) 1997-2015 Stig Bjørlykke, <stig@bjorlykke.org>
 
@@ -248,6 +248,7 @@ value returned by function `user-mail-address'."
     ("check") ("clean") ("changelog") ("files"))
   "Partial list of section names.")
 (defconst rpm-scripts
+  ;; trigger, filetrigger, transfiletrigger no found in build/parseScript.c
   '("pre" "post" "preun" "postun"
     "trigger" "triggerin" "triggerprein" "triggerun" "triggerpostun"
     "pretrans" "posttrans" "verifyscript" "filetriggerin" "filetrigger"
@@ -259,14 +260,16 @@ value returned by function `user-mail-address'."
   (eval-when-compile
     (concat "^%"
             (regexp-opt
-             ;; From RPM 4.12.90 sources, file build/parseSpec.c: partList[].
-             '("package" "prep" "build" "install" "check" "clean" "preun"
-               "postun" "pretrans" "posttrans" "pre" "post" "files" "changelog"
-               "description" "triggerpostun" "triggerprein" "triggerun"
-               "triggerin" "trigger" "verifyscript" "sepolicy" "filetriggerin"
+             ;; From RPM 4.16.1.3 sources, file build/parseSpec.c: partList[].
+             '("package" "prep" "generate_buildrequires" "build" "install"
+               "check" "clean" "preun" "postun" "pretrans" "posttrans"
+               "pre" "post" "files" "changelog" "description"
+               "triggerpostun" "triggerprein" "triggerun" "triggerin"
+               "trigger" "verifyscript" "sepolicy" "filetriggerin"
                "filetrigger" "filetriggerun" "filetriggerpostun"
                "transfiletriggerin" "transfiletrigger" "transfiletriggerun"
-               "transfiletriggerun" "transfiletriggerpostun") t)
+               "transfiletriggerun" "transfiletriggerpostun" "end"
+               "patchlist" "sourcelist") t)
             "\\b"))
   "Regular expression to match beginning of a section.")
 
@@ -350,7 +353,7 @@ value returned by function `user-mail-address'."
 (defvar rpm-spec-nobuild-option "--nobuild" "Option for no build.")
 
 (defvar rpm-tags-list
-  ;; From RPM 4.12.90 sources, file build/parsePreamble.c: preambleList[]:
+  ;; From RPM 4.16.1.3 sources, file build/parsePreamble.c: preambleList[]:
   '(("Name")
     ("Version")
     ("Release")
@@ -398,6 +401,7 @@ value returned by function `user-mail-address'."
     ("BugURL")
     ("OrderWithRequires")
     ("RemovePathPostFixes")
+    ("ModularityLabel")
     ;; ...plus some from rpm5.org:
     ("CVSId")
     ("SVNId")
@@ -896,7 +900,7 @@ WHAT is the tag used."
    (if (file-directory-p "/usr/src/redhat/") "/usr/src/redhat/")
    "/usr/src/RPM"))
 
-(defun rpm-insert-n (what &optional arg)
+(defun rpm-insert-n (what)
   "Insert given tag (WHAT) with possible number."
   (save-excursion
     (goto-char (point-max))
@@ -910,7 +914,7 @@ WHAT is the tag used."
       (rpm-end-of-section)
       (insert what ": " (read-from-minibuffer (concat what "file: ")) "\n"))))
 
-(defun rpm-change (&optional what arg)
+(defun rpm-change (&optional what)
   "Update given tag (WHAT)."
   (save-excursion
     (if (not what)
@@ -930,7 +934,7 @@ WHAT is the tag used."
                               (concat "New " what ": ") (match-string 1))))
         (message "%s tag not found..." what))))))
 
-(defun rpm-change-n (what &optional arg)
+(defun rpm-change-n (what)
   "Change given tag with possible number."
   (save-excursion
     (goto-char (point-min))
@@ -950,7 +954,7 @@ WHAT is the tag used."
   (beginning-of-line)
   (insert "Group: " group "\n"))
 
-(defun rpm-change-group (&optional arg)
+(defun rpm-change-group ()
   "Update Group tag."
   (interactive "p")
   (save-excursion
@@ -962,26 +966,26 @@ WHAT is the tag used."
                                               nil nil (match-string 1)))))
       (message "Group tag not found..."))))
 
-(defun rpm-insert-tag (&optional arg)
+(defun rpm-insert-tag ()
   "Insert or change a tag."
   (interactive "p")
   (if current-prefix-arg
       (rpm-change)
     (rpm-insert)))
 
-(defun rpm-change-tag (&optional arg)
+(defun rpm-change-tag ()
   "Change a tag."
   (interactive "p")
   (rpm-change))
 
-(defun rpm-insert-packager (&optional arg)
+(defun rpm-insert-packager ()
   "Insert Packager tag."
   (interactive "p")
   (beginning-of-line)
   (insert "Packager: " (or rpm-spec-user-full-name (user-full-name))
           " <" (rpm-spec-user-mail-address) ">\n"))
 
-(defun rpm-change-packager (&optional arg)
+(defun rpm-change-packager ()
   "Update Packager tag."
   (interactive "p")
   (rpm-change "Packager"))
@@ -1140,7 +1144,7 @@ leave point at previous location."
 	    (rpm-passwd-cache (read-passwd "GPG passphrase: ")))
 	(process-send-string build-proc (concat rpm-passwd-cache "\n")))))
 
-(defun rpm-build-prepare (&optional arg)
+(defun rpm-build-prepare ()
   "Run a `rpmbuild -bp'."
   (interactive "p")
   (if rpm-spec-short-circuit
@@ -1149,7 +1153,7 @@ leave point at previous location."
     (setq rpm-no-gpg t)
     (rpm-build "-bp")))
 
-(defun rpm-list-check (&optional arg)
+(defun rpm-list-check ()
   "Run a `rpmbuild -bl'."
   (interactive "p")
   (if rpm-spec-short-circuit
@@ -1158,19 +1162,19 @@ leave point at previous location."
     (setq rpm-no-gpg t)
     (rpm-build "-bl")))
 
-(defun rpm-build-compile (&optional arg)
+(defun rpm-build-compile ()
   "Run a `rpmbuild -bc'."
   (interactive "p")
   (setq rpm-no-gpg t)
   (rpm-build "-bc"))
 
-(defun rpm-build-install (&optional arg)
+(defun rpm-build-install ()
   "Run a `rpmbuild -bi'."
   (interactive "p")
   (setq rpm-no-gpg t)
   (rpm-build "-bi"))
 
-(defun rpm-build-binary (&optional arg)
+(defun rpm-build-binary ()
   "Run a `rpmbuild -bb'."
   (interactive "p")
   (if rpm-spec-short-circuit
@@ -1179,7 +1183,7 @@ leave point at previous location."
     (setq rpm-no-gpg nil)
     (rpm-build "-bb")))
 
-(defun rpm-build-source (&optional arg)
+(defun rpm-build-source ()
   "Run a `rpmbuild -bs'."
   (interactive "p")
   (if rpm-spec-short-circuit
@@ -1188,7 +1192,7 @@ leave point at previous location."
     (setq rpm-no-gpg nil)
     (rpm-build "-bs")))
 
-(defun rpm-build-all (&optional arg)
+(defun rpm-build-all ()
   "Run a `rpmbuild -ba'."
   (interactive "p")
   (if rpm-spec-short-circuit
@@ -1210,7 +1214,7 @@ command."
 
 ;;------------------------------------------------------------
 
-(defun rpm-toggle-short-circuit (&optional arg)
+(defun rpm-toggle-short-circuit ()
   "Toggle `rpm-spec-short-circuit'."
   (interactive "p")
   (setq rpm-spec-short-circuit (not rpm-spec-short-circuit))
@@ -1218,7 +1222,7 @@ command."
   (message (concat "Turned `--short-circuit' "
                    (if rpm-spec-short-circuit "on" "off") ".")))
 
-(defun rpm-toggle-rmsource (&optional arg)
+(defun rpm-toggle-rmsource ()
   "Toggle `rpm-spec-rmsource'."
   (interactive "p")
   (setq rpm-spec-rmsource (not rpm-spec-rmsource))
@@ -1226,7 +1230,7 @@ command."
   (message (concat "Turned `--rmsource' "
                    (if rpm-spec-rmsource "on" "off") ".")))
 
-(defun rpm-toggle-clean (&optional arg)
+(defun rpm-toggle-clean ()
   "Toggle `rpm-spec-clean'."
   (interactive "p")
   (setq rpm-spec-clean (not rpm-spec-clean))
@@ -1234,7 +1238,7 @@ command."
   (message (concat "Turned `--clean' "
                    (if rpm-spec-clean "on" "off") ".")))
 
-(defun rpm-toggle-nobuild (&optional arg)
+(defun rpm-toggle-nobuild ()
   "Toggle `rpm-spec-nobuild'."
   (interactive "p")
   (setq rpm-spec-nobuild (not rpm-spec-nobuild))
@@ -1242,7 +1246,7 @@ command."
   (message (concat "Turned `" rpm-spec-nobuild-option "' "
                    (if rpm-spec-nobuild "on" "off") ".")))
 
-(defun rpm-toggle-quiet (&optional arg)
+(defun rpm-toggle-quiet ()
   "Toggle `rpm-spec-quiet'."
   (interactive "p")
   (setq rpm-spec-quiet (not rpm-spec-quiet))
@@ -1250,7 +1254,7 @@ command."
   (message (concat "Turned `--quiet' "
                    (if rpm-spec-quiet "on" "off") ".")))
 
-(defun rpm-toggle-sign-gpg (&optional arg)
+(defun rpm-toggle-sign-gpg ()
   "Toggle `rpm-spec-sign-gpg'."
   (interactive "p")
   (setq rpm-spec-sign-gpg (not rpm-spec-sign-gpg))
@@ -1258,7 +1262,7 @@ command."
   (message (concat "Turned `--sign' "
                    (if rpm-spec-sign-gpg "on" "off") ".")))
 
-(defun rpm-toggle-add-attr (&optional arg)
+(defun rpm-toggle-add-attr ()
   "Toggle `rpm-spec-add-attr'."
   (interactive "p")
   (setq rpm-spec-add-attr (not rpm-spec-add-attr))
@@ -1266,7 +1270,7 @@ command."
   (message (concat "Default add \"attr\" entry turned "
                    (if rpm-spec-add-attr "on" "off") ".")))
 
-(defun rpm-toggle-nodeps (&optional arg)
+(defun rpm-toggle-nodeps ()
   "Toggle `rpm-spec-nodeps'."
   (interactive "p")
   (setq rpm-spec-nodeps (not rpm-spec-nodeps))
@@ -1291,43 +1295,43 @@ command."
 
 ;;------------------------------------------------------------
 
-(defun rpm-change-timecheck-option (&optional arg)
+(defun rpm-change-timecheck-option ()
   "Change the value for timecheck."
   (interactive "p")
   (setq rpm-spec-timecheck
         (read-from-minibuffer "New timecheck: " rpm-spec-timecheck)))
 
-(defun rpm-change-buildroot-option (&optional arg)
+(defun rpm-change-buildroot-option ()
   "Change the value for buildroot."
   (interactive "p")
   (setq rpm-spec-buildroot
         (read-from-minibuffer "New buildroot: " rpm-spec-buildroot)))
 
-(defun rpm-change-target-option (&optional arg)
+(defun rpm-change-target-option ()
   "Change the value for target."
   (interactive "p")
   (setq rpm-spec-target
         (read-from-minibuffer "New target: " rpm-spec-target)))
 
-(defun rpm-files-umask (&optional arg)
+(defun rpm-files-umask ()
   "Change the default umask for files."
   (interactive "p")
   (setq rpm-default-umask
         (read-from-minibuffer "Default file umask: " rpm-default-umask)))
 
-(defun rpm-files-owner (&optional arg)
+(defun rpm-files-owner ()
   "Change the default owner for files."
   (interactive "p")
   (setq rpm-default-owner
         (read-from-minibuffer "Default file owner: " rpm-default-owner)))
 
-(defun rpm-files-group (&optional arg)
+(defun rpm-files-group ()
   "Change the source directory."
   (interactive "p")
   (setq rpm-default-group
         (read-from-minibuffer "Default file group: " rpm-default-group)))
 
-(defun rpm-increase-release-tag (&optional arg)
+(defun rpm-increase-release-tag ()
   "Increase the release tag by 1."
   (interactive "p")
   (save-excursion
@@ -1498,7 +1502,7 @@ if one is present in the file."
 
 ;;------------------------------------------------------------
 
-(defun rpm-about-rpm-spec-mode (&optional arg)
+(defun rpm-about-rpm-spec-mode ()
   "About `rpm-spec-mode'."
   (interactive "p")
   (message
