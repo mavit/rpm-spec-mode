@@ -881,40 +881,34 @@ using FILETYPE to prompt the user."
                   rpm-default-group ") ")))
     (insert filetype)))
 
-(defun rpm-insert-file (&optional filename)
-  "Insert regular file.
-Use FILENAME or, if interactive, prompt."
-  (interactive "p")
+(defun rpm-insert-file (filename)
+  "Insert file FILENAME."
+  (interactive "FFilename: ")
   (rpm-insert-f "" filename))
 
-(defun rpm-insert-config (&optional filename)
-  "Insert config file.
-FILENAME is the config file."
-  (interactive "p")
+(defun rpm-insert-config (filename)
+  "Insert config file FILENAME."
+  (interactive "FFilename: ")
   (rpm-insert-f "%config " filename))
 
-(defun rpm-insert-doc (&optional filename)
-  "Insert doc file.
-FILENAME is the doc file."
-  (interactive "p")
+(defun rpm-insert-doc (filename)
+  "Insert doc file FILENAME."
+  (interactive "FFilename: ")
   (rpm-insert-f "%doc " filename))
 
-(defun rpm-insert-ghost (&optional filename)
-  "Insert ghost file.
-FILENAME is the ghost file."
-  (interactive "p")
+(defun rpm-insert-ghost (filename)
+  "Insert ghost file FILENAME."
+  (interactive "FFilename: ")
   (rpm-insert-f "%ghost " filename))
 
-(defun rpm-insert-dir (&optional dirname)
-  "Insert directory.
-DIRNAME is the directory."
-  (interactive "p")
+(defun rpm-insert-dir (dirname)
+  "Insert directory DIRNAME."
+  (interactive "GDirectory: ")
   (rpm-insert-f "%dir " dirname))
 
-(defun rpm-insert-docdir (&optional dirname)
-  "Insert doc directory.
-DIRNAME is the directory."
-  (interactive "p")
+(defun rpm-insert-docdir (dirname)
+  "Insert doc directory DIRNAME."
+  (interactive "GDirectory: ")
   (rpm-insert-f "%docdir " dirname))
 
 ;;------------------------------------------------------------
@@ -978,6 +972,7 @@ WHAT is the tag used."
   "Update given tag (WHAT)."
   (save-excursion
     (if (not what)
+		;; interactive
         (setq what (rpm-completing-read "Tag: " rpm-tags-list)))
     (cond
      ((string-equal what "Group")
@@ -995,7 +990,7 @@ WHAT is the tag used."
         (message "%s tag not found..." what))))))
 
 (defun rpm-change-n (tag)
-  "Change given TAG with possible number."
+  "Change given tag TAG with possible number."
   (save-excursion
     (goto-char (point-min))
     (let ((number (read-from-minibuffer (concat tag " number: "))))
@@ -1026,20 +1021,22 @@ WHAT is the tag used."
                                               nil nil (match-string 1)))))
       (message "Group tag not found..."))))
 
-(defun rpm-insert-tag (&optional tag)
-  "Insert or change a TAG."
-  (interactive "p")
+(defun rpm-insert-tag (tag)
+  "Insert or change a TAG.
+With a prefix argument, change an existing tag."
+  (interactive (list (completing-read "Tag: " rpm-tags-list)))
   (if current-prefix-arg
       (rpm-change tag)
-    (rpm-insert)))
+    (rpm-insert tag)))
 
-(defun rpm-change-tag (&optional tag)
-  "Change a TAG."
-  (interactive "p")
+(defun rpm-change-tag (tag)
+  "Change an existing tag."
+  (interactive (list (completing-read "Tag: " rpm-tags-list)))
   (rpm-change tag))
 
 (defun rpm-insert-packager ()
   "Insert Packager tag."
+  (interactive)
   (beginning-of-line)
   (insert (format "Packager: %s <%s>\n"
                   (if (functionp rpm-spec-user-full-name)
