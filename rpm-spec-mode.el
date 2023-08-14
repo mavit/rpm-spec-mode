@@ -911,14 +911,14 @@ using FILETYPE to prompt the user."
   (interactive "GDirectory: ")
   (rpm-insert-f "%docdir " dirname))
 
-;;------------------------------------------------------------
-(defun rpm-completing-read (prompt table &optional pred require init hist)
-  "Read from the minibuffer like `completing-read' but for rpms-spec-mode.
-Take `rpm-spec-completion-ignore-case' into account and forward
-all arguments i.e. PROMPT, TABLE, PRED, REQUIRE, INIT and HIST.
-Call `completing-read' accordingly."
+(defun rpm-completing-read (prompt collection &optional predicate
+                                   require-match initial-input hist)
+  "Take `rpm-spec-completion-ignore-case' into account call `completion-read'.
+Forward all arguments i.e. PROMPT, COLLECTION, PREDICATE, REQUIRE-MATCH,
+INITIAL-INPUT and HIST to `completing-read'."
   (let ((completion-ignore-case rpm-spec-completion-ignore-case))
-    (completing-read prompt table pred require init hist)))
+    (completing-read prompt collection predicate
+                     require-match initial-input hist)))
 
 (defun rpm-insert (&optional what file-completion)
   "Insert given tag.  Use FILE-COMPLETION if argument is t.
