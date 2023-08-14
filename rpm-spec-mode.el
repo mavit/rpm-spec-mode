@@ -240,16 +240,42 @@ value returned by function `user-mail-address'."
 ;; variables used by navigation functions.
 
 (defconst rpm-sections
-  '("preamble" "description" "prep" "setup" "build" "install" "check" "clean"
-    "changelog" "files")
+  '("preamble"
+    "description"
+    "prep"
+    "setup"
+    "build"
+    "install"
+    "check"
+    "clean"
+    "files"
+    "changelog"
+    )
   "Partial list of section names.")
 (defconst rpm-scripts
-  ;; trigger, filetrigger, transfiletrigger no found in build/parseScript.c
-  '("pre" "post" "preun" "postun"
-    "trigger" "triggerin" "triggerprein" "triggerun" "triggerpostun"
-    "pretrans" "posttrans" "verifyscript" "filetriggerin" "filetrigger"
-    "filetriggerun" "filetriggerpostun" "transfiletriggerin" "transfiletrigger"
-    "transfiletriggerun" "transfiletriggerun" "transfiletriggerpostun")
+  ;; See docs/manual/spec.md section "Runtime scriptlets"
+  '("pre"
+    "post"
+    "preun"
+    "postun"
+    "pretrans"
+    "posttrans"
+    "verifyscript"
+    "triggerprein"
+    "triggerin"
+    "triggerun"
+    "triggerpostun"
+    "filetriggerin"
+    "filetriggerun"
+    "filetriggerpostun"
+    "transfiletriggerin"
+    "transfiletriggerun"
+    "transfiletriggerpostun"
+    ;; trigger, filetrigger, transfiletrigger not found in build/parseScript.c
+    "trigger"
+    "filetrigger"
+    "transfiletrigger"
+    )
   "List of rpm scripts.")
 (defconst rpm-section-seperate "^%\\(\\w+\\)\\s-")
 (defconst rpm-section-regexp
@@ -257,15 +283,41 @@ value returned by function `user-mail-address'."
     (concat "^%"
             (regexp-opt
              ;; From RPM 4.16.1.3 sources, file build/parseSpec.c: partList[].
-             '("package" "prep" "generate_buildrequires" "build" "install"
-               "check" "clean" "preun" "postun" "pretrans" "posttrans"
-               "pre" "post" "files" "changelog" "description"
-               "triggerpostun" "triggerprein" "triggerun" "triggerin"
-               "trigger" "verifyscript" "sepolicy" "filetriggerin"
-               "filetrigger" "filetriggerun" "filetriggerpostun"
-               "transfiletriggerin" "transfiletrigger" "transfiletriggerun"
-               "transfiletriggerun" "transfiletriggerpostun" "end"
-               "patchlist" "sourcelist") t)
+             '("package"
+               "prep"
+               "generate_buildrequires"
+               "build"
+               "install"
+               "check"
+               "clean"
+               "preun"
+               "postun"
+               "pretrans"
+               "posttrans"
+               "pre"
+               "post"
+               "files"
+               "changelog"
+               "description"
+               "triggerpostun"
+               "triggerprein"
+               "triggerun"
+               "triggerin"
+               "trigger"
+               "verifyscript"
+               "sepolicy"
+               "filetriggerin"
+               "filetrigger"
+               "filetriggerun"
+               "filetriggerpostun"
+               "transfiletriggerin"
+               "transfiletrigger"
+               "transfiletriggerun"
+               "transfiletriggerpostun"
+               "end"
+               "patchlist"
+               "sourcelist"
+               ) t)
             "\\b"))
   "Regular expression to match beginning of a section.")
 
