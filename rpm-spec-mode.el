@@ -244,6 +244,7 @@ value returned by function `user-mail-address'."
     "description"
     "prep"
     "setup"
+    "conf"
     "build"
     "install"
     "check"
@@ -282,10 +283,11 @@ value returned by function `user-mail-address'."
   (eval-when-compile
     (concat "^%"
             (regexp-opt
-             ;; From RPM 4.16.1.3 sources, file build/parseSpec.c: partList[].
+             ;; From RPM 4.18.1 sources, file build/parseSpec.c: partList[].
              '("package"
                "prep"
                "generate_buildrequires"
+               "conf"
                "build"
                "install"
                "check"
@@ -401,13 +403,14 @@ value returned by function `user-mail-address'."
 (defvar rpm-spec-nobuild-option "--nobuild" "Option for no build.")
 
 (defvar rpm-tags-list
-  ;; From RPM 4.16.1.3 sources, file build/parsePreamble.c: preambleList[]:
+  ;; From RPM 4.18.1 sources, file build/parsePreamble.c: preambleList[]:
   '(("Name")
     ("Version")
     ("Release")
     ("Epoch")
     ("Summary")
     ("License")
+    ("SourceLicense")
     ("Distribution")
     ("DistURL")
     ("Vendor")
@@ -447,6 +450,8 @@ value returned by function `user-mail-address'."
     ("DocDir")
     ("DistTag")
     ("BugURL")
+    ("TranslationURL")
+    ("UpstreamReleases")
     ("OrderWithRequires")
     ("RemovePathPostFixes")
     ("ModularityLabel")
