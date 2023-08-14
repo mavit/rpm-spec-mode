@@ -175,16 +175,16 @@ the package."
 
 (defcustom rpm-spec-user-full-name nil
   "*Full name of the user.
-This is used in the change log and the Packager tag.  It defaults to the
-value returned by function `user-full-name'."
+This is used in the change log and the Packager tag.  If nil, default to
+the value returned by function `user-full-name'."
   :type '(choice (const :tag "Use `user-full-name'" nil)
                  string)
   :group 'rpm-spec)
 
 (defcustom rpm-spec-user-mail-address nil
   "*Email address of the user.
-This is used in the change log and the Packager tag.  It defaults to the
-value returned by function `user-mail-address'."
+This is used in the change log and the Packager tag.  If nil, default to
+the value returned by function `user-mail-address'."
   :type '(choice (const :tag "Use `user-mail-address'" nil)
                  string)
   :group 'rpm-spec)
