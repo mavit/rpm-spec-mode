@@ -1450,6 +1450,13 @@ if one is present in the file."
                 version
                 (and release (concat "-" release)))))))
 
+(defun rpm-insert-spec-version (&optional _)
+  "Insert the version string at point.
+With prefix argument, include the Epoch/Serial if present in the file.
+Not to be confused with the obsolete variable `rpm-insert-version'."
+  (interactive "p")
+  (insert (rpm-find-spec-version current-prefix-arg)))
+
 (defun rpm-increase-release-with-macros ()
   (save-excursion
     (let ((str
