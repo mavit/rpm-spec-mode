@@ -849,12 +849,14 @@ using FILETYPE to prompt the user."
   (rpm-insert-f "%docdir " dirname))
 
 ;;------------------------------------------------------------
-(defun rpm-completing-read (prompt table &optional pred require init hist)
+(defun rpm-completing-read (prompt collection &optional predicate
+                                   require-match initial-input hist)
   "Read from the minibuffer, with completion.
 Like `completing-read', but the variable `rpm-spec-completion-ignore-case'
 controls whether case is significant."
   (let ((completion-ignore-case rpm-spec-completion-ignore-case))
-    (completing-read prompt table pred require init hist)))
+    (completing-read prompt collection predicate
+                     require-match initial-input hist)))
 
 (defun rpm-insert (&optional what file-completion)
   "Insert given tag.  Use FILE-COMPLETION if argument is t.
