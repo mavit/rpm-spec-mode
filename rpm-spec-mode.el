@@ -922,8 +922,10 @@ WHAT is the tag used."
   (if (not what)
       (setq what (rpm-completing-read "Tag: " rpm-tags-list)))
   (let (read-text insert-text)
+    ;; This function is meant for tags, but we use it to insert some
+    ;; common macros as well.
     (if (string-match "^%" what)
-        (setq read-text (concat "Packagename for " what ": ")
+        (setq read-text (concat "Arg(s) for " what ": ")
               insert-text (concat what " "))
       (setq read-text (concat what ": ")
             insert-text (concat what ": ")))
