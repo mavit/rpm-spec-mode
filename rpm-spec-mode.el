@@ -261,6 +261,8 @@ value returned by function `user-mail-address'."
     "postun"
     "pretrans"
     "posttrans"
+    "preuntrans"                        ; RPM 4.19.x
+    "postuntrans"                       ; RPM 4.19.x
     "verifyscript"
     "triggerprein"
     "triggerin"
@@ -296,6 +298,8 @@ value returned by function `user-mail-address'."
                "postun"
                "pretrans"
                "posttrans"
+               "preuntrans"             ; RPM 4.19.x
+               "postuntrans"            ; RPM 4.19.x
                "pre"
                "post"
                "files"
