@@ -657,7 +657,6 @@ leaves point makes no difference."
   (goto-char (point-min))
   (let (rpm-imenu-index
         (sub-package-name-regexp "[[:space:]]+-n[[:space:]]+\\([-_[:alnum:]]+\\)")
-        rpm-spec-imenu-index-alist
         section
         pos-marker
         subpkg-name
