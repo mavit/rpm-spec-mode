@@ -494,52 +494,46 @@ value returned by function `user-mail-address'."
   (modify-syntax-entry ?| "." rpm-spec-mode-syntax-table)
   (modify-syntax-entry ?\' "." rpm-spec-mode-syntax-table))
 
-(eval-when-compile (or running-xemacs (defun set-keymap-name (a b))))
-
-(defvar rpm-spec-mode-map nil
-  "Keymap used in `rpm-spec-mode'.")
-(unless rpm-spec-mode-map
-  (setq rpm-spec-mode-map (make-sparse-keymap))
-  (and (functionp 'set-keymap-name)
-       (set-keymap-name rpm-spec-mode-map 'rpm-spec-mode-map))
-  (define-key rpm-spec-mode-map "\C-c\C-c"  'rpm-change-tag)
-  (define-key rpm-spec-mode-map "\C-c\C-e"  'rpm-add-change-log-entry)
-  (define-key rpm-spec-mode-map "\C-c\C-w"  'rpm-goto-add-change-log-entry)
-  (define-key rpm-spec-mode-map "\C-c\C-i"  'rpm-insert-tag)
-  (define-key rpm-spec-mode-map "\C-c\C-n"  'rpm-forward-section)
-  (define-key rpm-spec-mode-map "\C-c\C-o"  'rpm-goto-section)
-  (define-key rpm-spec-mode-map "\C-c\C-p"  'rpm-backward-section)
-  (define-key rpm-spec-mode-map "\C-c\C-r"  'rpm-increase-release-tag)
-  (define-key rpm-spec-mode-map "\C-c\C-u"  'rpm-insert-true-prefix)
-  (define-key rpm-spec-mode-map "\C-c\C-ba" 'rpm-build-all)
-  (define-key rpm-spec-mode-map "\C-c\C-bb" 'rpm-build-binary)
-  (define-key rpm-spec-mode-map "\C-c\C-bc" 'rpm-build-compile)
-  (define-key rpm-spec-mode-map "\C-c\C-bi" 'rpm-build-install)
-  (define-key rpm-spec-mode-map "\C-c\C-bl" 'rpm-list-check)
-  (define-key rpm-spec-mode-map "\C-c\C-bp" 'rpm-build-prepare)
-  (define-key rpm-spec-mode-map "\C-c\C-bs" 'rpm-build-source)
-  (define-key rpm-spec-mode-map "\C-c\C-dd" 'rpm-insert-dir)
-  (define-key rpm-spec-mode-map "\C-c\C-do" 'rpm-insert-docdir)
-  (define-key rpm-spec-mode-map "\C-c\C-fc" 'rpm-insert-config)
-  (define-key rpm-spec-mode-map "\C-c\C-fd" 'rpm-insert-doc)
-  (define-key rpm-spec-mode-map "\C-c\C-ff" 'rpm-insert-file)
-  (define-key rpm-spec-mode-map "\C-c\C-fg" 'rpm-insert-ghost)
-  (define-key rpm-spec-mode-map "\C-c\C-xa" 'rpm-toggle-add-attr)
-  (define-key rpm-spec-mode-map "\C-c\C-xb" 'rpm-change-buildroot-option)
-  (define-key rpm-spec-mode-map "\C-c\C-xc" 'rpm-toggle-clean)
-  (define-key rpm-spec-mode-map "\C-c\C-xd" 'rpm-toggle-nodeps)
-  (define-key rpm-spec-mode-map "\C-c\C-xf" 'rpm-files-group)
-  (define-key rpm-spec-mode-map "\C-c\C-xg" 'rpm-toggle-sign-gpg)
-  (define-key rpm-spec-mode-map "\C-c\C-xi" 'rpm-change-timecheck-option)
-  (define-key rpm-spec-mode-map "\C-c\C-xn" 'rpm-toggle-nobuild)
-  (define-key rpm-spec-mode-map "\C-c\C-xo" 'rpm-files-owner)
-  (define-key rpm-spec-mode-map "\C-c\C-xr" 'rpm-toggle-rmsource)
-  (define-key rpm-spec-mode-map "\C-c\C-xq" 'rpm-toggle-quiet)
-  (define-key rpm-spec-mode-map "\C-c\C-xs" 'rpm-toggle-short-circuit)
-  (define-key rpm-spec-mode-map "\C-c\C-xt" 'rpm-change-target-option)
-  (define-key rpm-spec-mode-map "\C-c\C-xu" 'rpm-files-umask)
-  ;;(define-key rpm-spec-mode-map "\C-q" 'indent-spec-exp)
-  ;;(define-key rpm-spec-mode-map "\t" 'sh-indent-line)
+(defvar-keymap rpm-spec-mode-map
+  :doc  "Keymap used in `rpm-spec-mode'."
+  "C-c C-c"  #'rpm-change-tag
+  "C-c C-e"  #'rpm-add-change-log-entry
+  "C-c C-w"  #'rpm-goto-add-change-log-entry
+  "C-c C-i"  #'rpm-insert-tag
+  "C-c C-n"  #'rpm-forward-section
+  "C-c C-o"  #'rpm-goto-section
+  "C-c C-p"  #'rpm-backward-section
+  "C-c C-r"  #'rpm-increase-release-tag
+  "C-c C-u"  #'rpm-insert-true-prefix
+  "C-c C-b a" #'rpm-build-all
+  "C-c C-b b" #'rpm-build-binary
+  "C-c C-b c" #'rpm-build-compile
+  "C-c C-b i" #'rpm-build-install
+  "C-c C-b l" #'rpm-list-check
+  "C-c C-b p" #'rpm-build-prepare
+  "C-c C-b s" #'rpm-build-source
+  "C-c C-d d" #'rpm-insert-dir
+  "C-c C-d o" #'rpm-insert-docdir
+  "C-c C-f c" #'rpm-insert-config
+  "C-c C-f d" #'rpm-insert-doc
+  "C-c C-f f" #'rpm-insert-file
+  "C-c C-f g" #'rpm-insert-ghost
+  "C-c C-x a" #'rpm-toggle-add-attr
+  "C-c C-x b" #'rpm-change-buildroot-option
+  "C-c C-x c" #'rpm-toggle-clean
+  "C-c C-x d" #'rpm-toggle-nodeps
+  "C-c C-x f" #'rpm-files-group
+  "C-c C-x g" #'rpm-toggle-sign-gpg
+  "C-c C-x i" #'rpm-change-timecheck-option
+  "C-c C-x n" #'rpm-toggle-nobuild
+  "C-c C-x o" #'rpm-files-owner
+  "C-c C-x r" #'rpm-toggle-rmsource
+  "C-c C-x q" #'rpm-toggle-quiet
+  "C-c C-x s" #'rpm-toggle-short-circuit
+  "C-c C-x t" #'rpm-change-target-option
+  "C-c C-x u" #'rpm-files-umask
+  ;;(define-key rpm-spec-mode-map "C-q" #'indent-spec-exp)
+  ;;(define-key rpm-spec-mode-map "\t" #'sh-indent-line)
   )
 
 (defconst rpm-spec-mode-menu
