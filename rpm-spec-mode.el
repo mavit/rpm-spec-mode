@@ -675,8 +675,7 @@ leaves point makes no difference."
       (if (setq submenu (assoc section rpm-imenu-index))
           (setf (cdr submenu)
                 (cons new-index (cdr submenu)))
-        (push 'rpm-imenu-index
-                     (list section new-index))))
+        (push (list section new-index) rpm-imenu-index)))
     rpm-imenu-index))
 
 ;;------------------------------------------------------------
