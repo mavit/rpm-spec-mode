@@ -65,6 +65,9 @@
 
 ;;; Code:
 (require 'compile)
+(require 'sh-script)
+(require 'cc-mode)
+(require 'easymenu)
 
 (defconst rpm-spec-mode-version "0.16" "Version of `rpm-spec-mode'.")
 
@@ -536,69 +539,69 @@ value returned by function `user-mail-address'."
   ;;(define-key rpm-spec-mode-map "\t" #'sh-indent-line)
   )
 
-(defconst rpm-spec-mode-menu
-  (purecopy '("RPM spec"
-              ["Insert Tag..."           rpm-insert-tag                t]
-              ["Change Tag..."           rpm-change-tag                t]
-              "---"
-              ["Go to section..."        rpm-mouse-goto-section  :keys "C-c C-o"]
-              ["Forward section"         rpm-forward-section           t]
-              ["Backward section"        rpm-backward-section          t]
-              "---"
-              ["Add change log entry..." rpm-add-change-log-entry      t]
-              ["Increase release tag"    rpm-increase-release-tag      t]
-              "---"
-              ("Add file entry"
-               ["Regular file..."        rpm-insert-file               t]
-               ["Config file..."         rpm-insert-config             t]
-               ["Document file..."       rpm-insert-doc                t]
-               ["Ghost file..."          rpm-insert-ghost              t]
-               "---"
-               ["Directory..."           rpm-insert-dir                t]
-               ["Document directory..."  rpm-insert-docdir             t]
-               "---"
-               ["Insert %{prefix}"       rpm-insert-true-prefix        t]
-               "---"
-               ["Default add \"%attr\" entry" rpm-toggle-add-attr
-                :style toggle :selected rpm-spec-add-attr]
-               ["Change default umask for files..."  rpm-files-umask   t]
-               ["Change default owner for files..."  rpm-files-owner   t]
-               ["Change default group for files..."  rpm-files-group   t])
-              ("Build Options"
-               ["Short circuit" rpm-toggle-short-circuit
-                :style toggle :selected rpm-spec-short-circuit]
-               ["Remove source" rpm-toggle-rmsource
-                :style toggle :selected rpm-spec-rmsource]
-               ["Clean"         rpm-toggle-clean
-                :style toggle :selected rpm-spec-clean]
-               ["No build"      rpm-toggle-nobuild
-                :style toggle :selected rpm-spec-nobuild]
-               ["Quiet"         rpm-toggle-quiet
-                :style toggle :selected rpm-spec-quiet]
-               ["GPG sign"      rpm-toggle-sign-gpg
-                :style toggle :selected rpm-spec-sign-gpg]
-               ["Ignore dependencies" rpm-toggle-nodeps
-                :style toggle :selected rpm-spec-nodeps]
-               "---"
-               ["Change timecheck value..."  rpm-change-timecheck-option   t]
-               ["Change buildroot value..."  rpm-change-buildroot-option   t]
-               ["Change target value..."     rpm-change-target-option      t])
-              ("RPM Build"
-               ["Execute \"%prep\" stage"    rpm-build-prepare             t]
-               ["Do a \"list check\""        rpm-list-check                t]
-               ["Do the \"%build\" stage"    rpm-build-compile             t]
-               ["Do the \"%install\" stage"  rpm-build-install             t]
-               "---"
-               ["Build binary package"       rpm-build-binary              t]
-               ["Build source package"       rpm-build-source              t]
-               ["Build binary and source"    rpm-build-all                 t])
-              "---"
-              ["About rpm-spec-mode"         rpm-about-rpm-spec-mode       t]
-              )))
+(easy-menu-define rpm-spec-mode-menu rpm-spec-mode-map
+  "Post menu for `rpm-spec-mode'."
+  '("RPM spec"
+    ["Insert Tag..."           rpm-insert-tag                t]
+    ["Change Tag..."           rpm-change-tag                t]
+    "---"
+    ["Go to section..."        rpm-mouse-goto-section  :keys "C-c C-o"]
+    ["Forward section"         rpm-forward-section           t]
+    ["Backward section"        rpm-backward-section          t]
+    "---"
+    ["Add change log entry..." rpm-add-change-log-entry      t]
+    ["Increase release tag"    rpm-increase-release-tag      t]
+    "---"
+    ("Add file entry"
+     ["Regular file..."        rpm-insert-file               t]
+     ["Config file..."         rpm-insert-config             t]
+     ["Document file..."       rpm-insert-doc                t]
+     ["Ghost file..."          rpm-insert-ghost              t]
+     "---"
+     ["Directory..."           rpm-insert-dir                t]
+     ["Document directory..."  rpm-insert-docdir             t]
+     "---"
+     ["Insert %{prefix}"       rpm-insert-true-prefix        t]
+     "---"
+     ["Default add \"%attr\" entry" rpm-toggle-add-attr
+      :style toggle :selected rpm-spec-add-attr]
+     ["Change default umask for files..."  rpm-files-umask   t]
+     ["Change default owner for files..."  rpm-files-owner   t]
+     ["Change default group for files..."  rpm-files-group   t])
+    ("Build Options"
+     ["Short circuit" rpm-toggle-short-circuit
+      :style toggle :selected rpm-spec-short-circuit]
+     ["Remove source" rpm-toggle-rmsource
+      :style toggle :selected rpm-spec-rmsource]
+     ["Clean"         rpm-toggle-clean
+      :style toggle :selected rpm-spec-clean]
+     ["No build"      rpm-toggle-nobuild
+      :style toggle :selected rpm-spec-nobuild]
+     ["Quiet"         rpm-toggle-quiet
+      :style toggle :selected rpm-spec-quiet]
+     ["GPG sign"      rpm-toggle-sign-gpg
+      :style toggle :selected rpm-spec-sign-gpg]
+     ["Ignore dependencies" rpm-toggle-nodeps
+      :style toggle :selected rpm-spec-nodeps]
+     "---"
+     ["Change timecheck value..."  rpm-change-timecheck-option   t]
+     ["Change buildroot value..."  rpm-change-buildroot-option   t]
+     ["Change target value..."     rpm-change-target-option      t])
+    ("RPM Build"
+     ["Execute \"%prep\" stage"    rpm-build-prepare             t]
+     ["Do a \"list check\""        rpm-list-check                t]
+     ["Do the \"%build\" stage"    rpm-build-compile             t]
+     ["Do the \"%install\" stage"  rpm-build-install             t]
+     "---"
+     ["Build binary package"       rpm-build-binary              t]
+     ["Build source package"       rpm-build-source              t]
+     ["Build binary and source"    rpm-build-all                 t])
+    "---"
+    ["About rpm-spec-mode"         rpm-about-rpm-spec-mode       t]))
+
 
 (defvar rpm-spec-font-lock-keywords
-  (list
-   (cons rpm-section-regexp rpm-spec-section-face)
+  `((cons rpm-section-regexp rpm-spec-section-face)
    '("%[a-zA-Z0-9_]+" 0 rpm-spec-macro-face)
    (cons (concat "^" rpm-obsolete-tags-regexp "\\(\([a-zA-Z0-9,_]+\)\\)[ \t]*:")
          '((1 'rpm-spec-obsolete-tag-face)
@@ -630,12 +633,9 @@ value returned by function `user-mail-address'."
      (4 rpm-spec-ghost-face))
    '("%{[^{}]*}" 0 rpm-spec-macro-face)
    '("$[a-zA-Z0-9_]+" 0 rpm-spec-var-face)
-   '("${[a-zA-Z0-9_]+}" 0 rpm-spec-var-face)
-   )
+   '("${[a-zA-Z0-9_]+}" 0 rpm-spec-var-face))
   "Additional expressions to highlight in `rpm-spec-mode'.")
 
-;;Initialize font lock for xemacs
-(put 'rpm-spec-mode 'font-lock-defaults '(rpm-spec-font-lock-keywords))
 
 (defvar rpm-spec-mode-abbrev-table nil
   "Abbrev table in use in `rpm-spec-mode' buffers.")
@@ -684,7 +684,7 @@ leaves point makes no difference."
 (add-hook 'rpm-spec-mode-new-file-hook 'rpm-spec-initialize)
 
 ;;;###autoload
-(defun rpm-spec-mode ()
+(define-derived-mode rpm-spec-mode shell-script-mode "RPM"
   "Major mode for editing RPM spec files.
 This is much like C mode except for the syntax of comments.  It uses
 the same keymap as C mode and has the same variables for customizing
@@ -692,22 +692,7 @@ indentation.  It has its own abbrev table and its own syntax table.
 
 Turning on RPM spec mode calls the value of the variable `rpm-spec-mode-hook'
 with no args, if that value is non-nil."
-  (interactive)
-  (kill-all-local-variables)
-  (condition-case nil
-      (require 'shindent)
-    (error
-     (require 'sh-script)))
-  (require 'cc-mode)
-  (use-local-map rpm-spec-mode-map)
-  (setq major-mode 'rpm-spec-mode)
   (rpm-update-mode-name)
-  (setq local-abbrev-table rpm-spec-mode-abbrev-table)
-  (set-syntax-table rpm-spec-mode-syntax-table)
-
-  (require 'easymenu)
-  (easy-menu-define rpm-spec-call-menu rpm-spec-mode-map
-                    "Post menu for `rpm-spec-mode'." rpm-spec-mode-menu)
 
   (if (and (= (buffer-size) 0) rpm-spec-initialize-sections)
       (run-hooks 'rpm-spec-mode-new-file-hook))
@@ -739,7 +724,7 @@ with no args, if that value is non-nil."
 ;  (setq comment-indent-function 'c-comment-indent)
   ;;Initialize font lock for GNU emacs.
   (make-local-variable 'font-lock-defaults)
-  (setq font-lock-defaults '(rpm-spec-font-lock-keywords nil t))
+  (setq font-lock-defaults '(rpm-spec-font-lock-keywords nil))
   (rpm-spec-mode-imenu-setup)
   (run-hooks 'rpm-spec-mode-hook))
 
