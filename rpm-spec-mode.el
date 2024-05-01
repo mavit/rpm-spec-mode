@@ -601,7 +601,8 @@ value returned by function `user-mail-address'."
 
 
 (defvar rpm-spec-font-lock-keywords
-  `((cons rpm-section-regexp rpm-spec-section-face)
+  (list
+   (cons rpm-section-regexp rpm-spec-section-face)
    '("%[a-zA-Z0-9_]+" 0 rpm-spec-macro-face)
    (cons (concat "^" rpm-obsolete-tags-regexp "\\(\([a-zA-Z0-9,_]+\)\\)[ \t]*:")
          '((1 'rpm-spec-obsolete-tag-face)
