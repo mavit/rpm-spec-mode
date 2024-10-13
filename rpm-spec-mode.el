@@ -601,7 +601,8 @@ value returned by function `user-mail-address'."
 
 
 (defvar rpm-spec-font-lock-keywords
-  `((cons rpm-section-regexp rpm-spec-section-face)
+  (list
+   (cons rpm-section-regexp rpm-spec-section-face)
    '("%[a-zA-Z0-9_]+" 0 rpm-spec-macro-face)
    (cons (concat "^" rpm-obsolete-tags-regexp "\\(\([a-zA-Z0-9,_]+\)\\)[ \t]*:")
          '((1 'rpm-spec-obsolete-tag-face)
@@ -722,7 +723,7 @@ with no args, if that value is non-nil."
 ;  (setq comment-indent-function 'c-comment-indent)
   ;;Initialize font lock for GNU emacs.
   (make-local-variable 'font-lock-defaults)
-  (setq font-lock-defaults '(rpm-spec-font-lock-keywords nil))
+  (font-lock-add-keywords nil rpm-spec-font-lock-keywords)
   (rpm-spec-mode-imenu-setup)
   (run-hooks 'rpm-spec-mode-hook))
 
