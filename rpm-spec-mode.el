@@ -243,36 +243,102 @@ value returned by function `user-mail-address'."
 ;; variables used by navigation functions.
 
 (defconst rpm-sections
-  '("preamble" "description" "prep" "setup" "build" "install" "check" "clean"
-    "changelog" "files")
+  '("preamble"
+    "description"
+    "prep"
+    "generate_buildrequires"
+    "conf"
+    "build"
+    "install"
+    "check"
+    "clean"
+    "changelog"
+    "files")
   "Partial list of section names.")
 (defvar rpm-section-list
-  '(("preamble") ("description") ("prep") ("setup") ("build") ("install")
-    ("check") ("clean") ("changelog") ("files"))
+  '(("preamble")
+    ("description")
+    ("prep")
+    ("generate_buildrequires")
+    ("conf")
+    ("build")
+    ("install")
+    ("check")
+    ("clean")
+    ("changelog")
+    ("files"))
   "Partial list of section names.")
 (defconst rpm-scripts
   ;; trigger, filetrigger, transfiletrigger no found in build/parseScript.c
-  '("pre" "post" "preun" "postun"
-    "trigger" "triggerin" "triggerprein" "triggerun" "triggerpostun"
-    "pretrans" "posttrans" "verifyscript" "filetriggerin" "filetrigger"
-    "filetriggerun" "filetriggerpostun" "transfiletriggerin" "transfiletrigger"
-    "transfiletriggerun" "transfiletriggerun" "transfiletriggerpostun")
+  '("pre"
+    "post"
+    "preun"
+    "postun"
+    "trigger"
+    "triggerin"
+    "triggerprein"
+    "triggerun"
+    "triggerpostun"
+    "pretrans"
+    "posttrans"
+    "preuntrans"
+    "postuntrans"
+    "verifyscript"
+    "filetriggerin"
+    "filetrigger"
+    "filetriggerun"
+    "filetriggerpostun"
+    "transfiletriggerin"
+    "transfiletrigger"
+    "transfiletriggerun"
+    "transfiletriggerun"
+    "transfiletriggerpostun")
   "List of rpm scripts.")
 (defconst rpm-section-seperate "^%\\(\\w+\\)\\s-")
 (defconst rpm-section-regexp
   (eval-when-compile
     (concat "^%"
             (regexp-opt
-             ;; From RPM 4.16.1.3 sources, file build/parseSpec.c: partList[].
-             '("package" "prep" "generate_buildrequires" "build" "install"
-               "check" "clean" "preun" "postun" "pretrans" "posttrans"
-               "pre" "post" "files" "changelog" "description"
-               "triggerpostun" "triggerprein" "triggerun" "triggerin"
-               "trigger" "verifyscript" "sepolicy" "filetriggerin"
-               "filetrigger" "filetriggerun" "filetriggerpostun"
-               "transfiletriggerin" "transfiletrigger" "transfiletriggerun"
-               "transfiletriggerun" "transfiletriggerpostun" "end"
-               "patchlist" "sourcelist") t)
+             ;; From RPM 4.20.0 sources, file build/parseSpec.c: partList[].
+             '("package"
+               "prep"
+               "generate_buildrequires"
+               "conf"
+               "build"
+               "install"
+               "check"
+               "clean"
+               "preun"
+               "postun"
+               "pretrans"
+               "posttrans"
+               "preuntrans"
+               "postuntrans"
+               "pre"
+               "post"
+               "files"
+               "changelog"
+               "description"
+               "triggerpostun"
+               "triggerprein"
+               "triggerun"
+               "triggerin"
+               "trigger"
+               "verifyscript"
+               "sepolicy"
+               "filetriggerin"
+               "filetrigger"
+               "filetriggerun"
+               "filetriggerpostun"
+               "transfiletriggerin"
+               "transfiletrigger"
+               "transfiletriggerun"
+               "transfiletriggerun"
+               "transfiletriggerpostun"
+               "end"
+               "patchlist"
+               "sourcelist")
+             t)
             "\\b"))
   "Regular expression to match beginning of a section.")
 
