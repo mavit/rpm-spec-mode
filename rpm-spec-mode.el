@@ -692,6 +692,21 @@ value returned by function `user-mail-address'."
   "Additional expressions to highlight in `rpm-spec-mode'.")
 
 
+(defun rpm-spec-mode-comment-region (beg end &optional arg)
+  "Comment between BEG and END, replacing % with %% to prevent macro expansion.
+ARG is passed on to `comment-region-default'."
+  (comment-region-default beg
+                          (+ end (replace-string-in-region "%" "%%" beg end))
+                          arg))
+
+(defun rpm-spec-mode-uncomment-region (beg end &optional arg)
+  "Uncomment between BEG and END, replacing %% with % to reenable macro expansion.
+ARG is passed on to `uncomment-region-default'."
+  (uncomment-region-default beg
+                            (- end (replace-string-in-region "%%" "%" beg end))
+                            arg))
+
+
 (defvar rpm-spec-mode-abbrev-table nil
   "Abbrev table in use in `rpm-spec-mode' buffers.")
 (define-abbrev-table 'rpm-spec-mode-abbrev-table ())
@@ -765,6 +780,8 @@ with no args, if that value is non-nil."
   (setq-local comment-column 32)
   (setq-local comment-start-skip "#+ *")
 ;  (setq-local comment-indent-function 'c-comment-indent)
+  (setq-local comment-region-function #'rpm-spec-mode-comment-region)
+  (setq-local uncomment-region-function #'rpm-spec-mode-uncomment-region)
   ;;Initialize font lock for GNU emacs.
   (make-local-variable 'font-lock-defaults)
   (font-lock-add-keywords nil rpm-spec-font-lock-keywords)
