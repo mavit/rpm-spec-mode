@@ -1,3 +1,13 @@
 #+TITLE: rpm-spec-mode
 
-RPM spec file editing commands for Emacs/XEmacs
+A major-mode for editing RPM spec files.
+
+The mode originated from XEmacs's prog-modes but diverged after sometime when
+Stig Bjørlykke took over the development.
+
+At some point the fork became the effective upstream.
+For reference the historic ChangeLog entries from XEmacs are included in this
+repository (see [[file:ChangeLog]]).
+
+A copy of the original upstream prog-modes can be found below:
+[[https://foss.heptapod.net/xemacs/prog-modes][xemacs / prog-modes · GitLab]]
