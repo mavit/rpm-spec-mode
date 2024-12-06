@@ -821,7 +821,8 @@ If `rpm-change-log-uses-utc' is nil, \"today\" means the local time zone."
 (defun rpm-goto-add-change-log-header ()
   "Find change log and add header (if needed) for today."
     (rpm-goto-section "changelog")
-    (let* ((address (rpm-spec-user-mail-address))
+    (let* ((address (or rpm-spec-user-mail-address
+                        user-mail-address))
            (fullname (or rpm-spec-user-full-name (user-full-name)))
            (system-time-locale "C")
            (string (concat "* " (rpm-change-log-date-string) " "
@@ -1029,8 +1030,10 @@ WHAT is the tag used."
 (defun rpm-insert-packager ()
   "Insert Packager tag."
   (beginning-of-line)
-  (insert "Packager: " (or rpm-spec-user-full-name (user-full-name))
-          " <" (rpm-spec-user-mail-address) ">\n"))
+  (insert (format "Packager: %s <%s>\n"
+                  (or rpm-spec-user-full-name (user-full-name))
+                  (or rpm-spec-user-mail-address
+                      user-mail-address))))
 
 (defun rpm-change-packager ()
   "Update Packager tag."
@@ -1532,18 +1535,6 @@ If ARG is non-nil increase by ARG or 1 if not"
 
     (end-of-line 1)
     (rpm-add-change-log-entry "Initial build.")))
-
-;;------------------------------------------------------------
-
-(defun rpm-spec-user-mail-address ()
-  "User mail address helper."
-  (cond
-   (rpm-spec-user-mail-address
-    rpm-spec-user-mail-address)
-   ((fboundp 'user-mail-address)
-    (user-mail-address))
-   (t
-    user-mail-address)))
 
 ;;------------------------------------------------------------
 
