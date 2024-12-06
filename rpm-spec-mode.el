@@ -1398,7 +1398,7 @@ command."
   "Get the value of FIELD, searching up to buffer position MAX.
 See `search-forward-regexp'."
   (save-excursion
-    (condition-case nil
+    (ignore-errors
       (let ((str
              (progn
                (goto-char (point-min))
@@ -1422,8 +1422,7 @@ See `search-forward-regexp'."
                     (concat start-string end-string)
                   ;; Leave as is.
                   str)))
-          str))
-      (error nil))))
+          str)))))
 
 (defun rpm-find-spec-version (&optional with-epoch)
   "Get the version string.
