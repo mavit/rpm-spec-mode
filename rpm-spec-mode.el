@@ -693,14 +693,17 @@ value returned by function `user-mail-address'."
 
 
 (defun rpm-spec-mode-comment-region (beg end &optional arg)
-  "Comment between BEG and END, replacing % with %% to prevent macro expansion.
+  "Comment each line between BEG ... END region.
+But also escape the % character by duplicating it to prevent macro expansion.
 ARG is passed on to `comment-region-default'."
   (comment-region-default beg
                           (+ end (replace-string-in-region "%" "%%" beg end))
                           arg))
 
 (defun rpm-spec-mode-uncomment-region (beg end &optional arg)
-  "Uncomment between BEG and END, replacing %% with % to reenable macro expansion.
+  "Uncomment each line between the BEG .. END region.
+But also revert the escape of the % character by deduplicating it which
+reenables macro expansion.
 ARG is passed on to `uncomment-region-default'."
   (uncomment-region-default beg
                             (- end (replace-string-in-region "%%" "%" beg end))
