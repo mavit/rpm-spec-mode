@@ -252,8 +252,8 @@ value returned by function `user-mail-address'."
     "install"
     "check"
     "clean"
-    "changelog"
-    "files")
+    "files"
+    "changelog")
   "Partial list of section names.")
 (defconst rpm-scripts
   ;; trigger, filetrigger, transfiletrigger no found in build/parseScript.c
