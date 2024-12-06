@@ -278,7 +278,6 @@ value returned by function `user-mail-address'."
     "transfiletriggerin"
     "transfiletrigger"
     "transfiletriggerun"
-    "transfiletriggerun"
     "transfiletriggerpostun")
   "List of rpm scripts.")
 (defconst rpm-section-seperate "^%\\(\\w+\\)\\s-")
@@ -319,7 +318,6 @@ value returned by function `user-mail-address'."
                "filetriggerpostun"
                "transfiletriggerin"
                "transfiletrigger"
-               "transfiletriggerun"
                "transfiletriggerun"
                "transfiletriggerpostun"
                "end"
