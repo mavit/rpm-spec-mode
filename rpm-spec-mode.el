@@ -726,15 +726,14 @@ ARG is passed on to `uncomment-region-default'."
 ;;------------------------------------------------------------
 ;; Imenu support
 (defun rpm-spec-mode-imenu-setup ()
-  "An all-in-one setup function to add `imenu' support to
-`rpm-spec-mode'."
+  "An all-in-one setup function to add `imenu' support to `rpm-spec-mode'."
   (setq imenu-create-index-function
         #'rpm-spec-mode-imenu-create-index-function))
 
 (defun rpm-spec-mode-imenu-create-index-function ()
-  "Creating a buffer index for `rpm-spec-mode' The function
-should take no arguments, and return an index alist for the
-current buffer. It is called within `save-excursion', so where it
+  "Creating a buffer index for `rpm-spec-mode'.
+The function should take no arguments, and return an index alist for the
+current buffer.  It is called within `save-excursion', so where it
 leaves point makes no difference."
   (goto-char (point-min))
   (let (rpm-imenu-index
@@ -918,9 +917,10 @@ DIRNAME is the directory."
 
 ;;------------------------------------------------------------
 (defun rpm-completing-read (prompt table &optional pred require init hist)
-  "Read from the minibuffer, with completion.
-Like `completing-read', but the variable `rpm-spec-completion-ignore-case'
-controls whether case is significant."
+  "Read from the minibuffer like `completing-read' but for rpms-spec-mode.
+Take `rpm-spec-completion-ignore-case' into account and forward
+all arguments i.e. PROMPT, TABLE, PRED, REQUIRE, INIT and HIST.
+Call `completing-read' accordingly."
   (let ((completion-ignore-case rpm-spec-completion-ignore-case))
     (completing-read prompt table pred require init hist)))
 
@@ -992,19 +992,19 @@ WHAT is the tag used."
                               (concat "New " what ": ") (match-string 1))))
         (message "%s tag not found..." what))))))
 
-(defun rpm-change-n (what)
-  "Change given tag with possible number."
+(defun rpm-change-n (tag)
+  "Change given TAG with possible number."
   (save-excursion
     (goto-char (point-min))
-    (let ((number (read-from-minibuffer (concat what " number: "))))
+    (let ((number (read-from-minibuffer (concat tag " number: "))))
       (if (search-forward-regexp
-           (concat "^" what number ":\\s-*\\(.*\\)") nil t)
+           (concat "^" tag number ":\\s-*\\(.*\\)") nil t)
           (let ((default-directory (concat (rpm-topdir) "/SOURCES/")))
             (replace-match
-             (concat what number ": "
-                     (read-file-name (concat "New " what number " file: ")
+             (concat tag number ": "
+                     (read-file-name (concat "New " tag number " file: ")
                                      "" "" nil (match-string 1)))))
-        (message "%s number \"%s\" not found..." what number)))))
+        (message "%s number \"%s\" not found..." tag number)))))
 
 (defun rpm-insert-group (group)
   "Insert GROUP tag."
@@ -1024,17 +1024,17 @@ WHAT is the tag used."
                                               nil nil (match-string 1)))))
       (message "Group tag not found..."))))
 
-(defun rpm-insert-tag (&optional arg)
-  "Insert or change a tag."
+(defun rpm-insert-tag (&optional tag)
+  "Insert or change a TAG."
   (interactive "p")
   (if current-prefix-arg
-      (rpm-change arg)
+      (rpm-change tag)
     (rpm-insert)))
 
-(defun rpm-change-tag (&optional arg)
-  "Change a tag."
+(defun rpm-change-tag (&optional tag)
+  "Change a TAG."
   (interactive "p")
-  (rpm-change arg))
+  (rpm-change tag))
 
 (defun rpm-insert-packager ()
   "Insert Packager tag."
@@ -1132,7 +1132,7 @@ leave point at previous location."
              (goto-char (point-max))))))
 
 (defun rpm-insert-true-prefix ()
-  "Insert %{prefix}"
+  "Insert %{prefix}."
   (interactive)
   (insert "%{prefix}"))
 
@@ -1453,8 +1453,8 @@ if one is present in the file."
                 (and release (concat "-" release)))))))
 
 (defun rpm-increase-release-with-macros (&optional increment)
-  "Increase release in spec
-If ARG is non-nil increase by ARG or 1 if not"
+  "Increase release in spec.
+Either by INCREMENT or 1 if not given."
   (let ((increment (or increment 1)))
   (save-excursion
     (let ((str
@@ -1559,7 +1559,7 @@ If ARG is non-nil increase by ARG or 1 if not"
 
 (provide 'rpm-spec-mode)
 ;;;###autoload
-(define-compilation-mode rpmbuild-mode "RPM build" ""
+(define-compilation-mode rpmbuild-mode "RPM build"
   (setq-local compilation-disable-input t))
 
 ;;; rpm-spec-mode.el ends here
