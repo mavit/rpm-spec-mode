@@ -239,6 +239,13 @@ Can be either a string or a function."
   :type 'boolean
   :group 'rpm-spec)
 
+(defcustom rpm-build-topdir "~/rpmbuild"
+  "Rpm _topdir directory to be used when calling rpmbuild."
+  :type 'directory
+  :safe t
+  :package-version '(rpm-spec . 0.17.0)
+  :group 'rpm-spec)
+
 (defgroup rpm-spec-faces nil
   "Font lock faces for `rpm-spec-mode'."
   :prefix "rpm-spec-"
@@ -944,15 +951,13 @@ WHAT is the tag used."
           (insert insert-text (read-file-name (concat read-text) "" "" nil) "\n")
         (insert insert-text (read-from-minibuffer (concat read-text)) "\n"))))))
 
-(defun rpm-topdir ()
-  "Use environment to get the topdir for RPMs."
-  (or
-   (getenv "RPM")
-   (getenv "rpm")
-   (if (file-directory-p "~/rpm") "~/rpm/")
-   (if (file-directory-p "~/RPM") "~/RPM/")
-   (if (file-directory-p "/usr/src/redhat/") "/usr/src/redhat/")
-   "/usr/src/RPM"))
+(defun rpm--topdir ()
+  "Try user environment for rpmbuild topdir or default to custom setting."
+  (let ((rpm-envdir (or (getenv "RPM")
+                         (getenv "rpm"))))
+    (if (file-directory-p rpm-envdir)
+        rpm-envdir
+      rpm-build-topdir)))
 
 (defun rpm-insert-n (what)
   "Insert given tag (WHAT) with possible number."
@@ -961,7 +966,7 @@ WHAT is the tag used."
     (if (search-backward-regexp (concat "^" what "\\([0-9]*\\):") nil t)
         (let ((release (1+ (string-to-number (match-string 1)))))
           (forward-line 1)
-          (let ((default-directory (concat (rpm-topdir) "/SOURCES/")))
+          (let ((default-directory (concat (rpm--topdir) "/SOURCES/")))
             (insert what (int-to-string release) ": "
                     (read-file-name (concat what "file: ") "" "" nil) "\n")))
       (goto-char (point-min))
@@ -996,7 +1001,7 @@ WHAT is the tag used."
     (let ((number (read-from-minibuffer (concat tag " number: "))))
       (if (search-forward-regexp
            (concat "^" tag number ":\\s-*\\(.*\\)") nil t)
-          (let ((default-directory (concat (rpm-topdir) "/SOURCES/")))
+          (let ((default-directory (concat (rpm--topdir) "/SOURCES/")))
             (replace-match
              (concat tag number ": "
                      (read-file-name (concat "New " tag number " file: ")
