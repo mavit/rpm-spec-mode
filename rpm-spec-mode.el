@@ -79,6 +79,9 @@
 (require 'cc-mode)
 (require 'easymenu)
 
+(declare-function lm-version "lisp-mnt")
+(declare-function lm-maintainers "lisp-mnt")
+
 (defconst rpm-spec-mode-version "0.16" "Version of `rpm-spec-mode'.")
 
 (defgroup rpm-spec nil
@@ -834,21 +837,22 @@ If `rpm-change-log-uses-utc' is nil, \"today\" means the local time zone."
 
 (defun rpm-goto-add-change-log-header ()
   "Find change log and add header (if needed) for today."
-    (rpm-goto-section "changelog")
-    (let* ((address (if (functionp rpm-spec-user-mail-address)
-                        (funcall rpm-spec-user-mail-address)
-					  rpm-spec-user-mail-address))
-           (fullname (if (functionp rpm-spec-user-full-name)
-						 (funcall rpm-spec-user-full-name)
-					   rpm-spec-user-full-name))
-           (system-time-locale "C")
-           (string (concat "* " (rpm-change-log-date-string) " "
-                           fullname " <" address ">"
-                           (and rpm-spec-insert-changelog-version
-                                (concat " - " (rpm-find-spec-version t))))))
-      (if (not (search-forward string nil t))
-          (insert "\n" string "\n")
-        (forward-line 2))))
+  (rpm-goto-section "changelog")
+  (let* ((address (if (functionp rpm-spec-user-mail-address)
+                      (funcall rpm-spec-user-mail-address)
+					rpm-spec-user-mail-address))
+         (fullname (if (functionp rpm-spec-user-full-name)
+					   (funcall rpm-spec-user-full-name)
+					 rpm-spec-user-full-name))
+         (system-time-locale "C")
+         (change-log-header (format "* %s %s  <%s> - %s"
+                                    (rpm-change-log-date-string)
+                                    fullname
+                                    address
+                                    (rpm-find-spec-version t))))
+    (if (not (search-forward change-log-header nil t))
+        (insert "\n" change-log-header "\n")
+      (forward-line 2))))
 
 (defun rpm-add-change-log-entry (&optional change-log-entry)
   "Find change log and add an entry for today.
@@ -935,7 +939,7 @@ WHAT is the tag used."
       (setq what (rpm-completing-read "Tag: " rpm-tags-list)))
   (let (read-text insert-text)
     (if (string-match "^%" what)
-        (setq read-text (concat "Packagename for " what ": ")
+        (setq read-text (format "Packagename for %s: " what)
               insert-text (concat what " "))
       (setq read-text (concat what ": ")
             insert-text (concat what ": ")))
@@ -966,7 +970,7 @@ WHAT is the tag used."
     (if (search-backward-regexp (concat "^" what "\\([0-9]*\\):") nil t)
         (let ((release (1+ (string-to-number (match-string 1)))))
           (forward-line 1)
-          (let ((default-directory (concat (rpm--topdir) "/SOURCES/")))
+          (let ((default-directory (expand-file-name "/SOURCES/" (rpm--topdir))))
             (insert what (int-to-string release) ": "
                     (read-file-name (concat what "file: ") "" "" nil) "\n")))
       (goto-char (point-min))
@@ -991,7 +995,7 @@ WHAT is the tag used."
       (if (search-forward-regexp (concat "^" what ":\\s-*\\(.*\\)$") nil t)
           (replace-match
            (concat what ": " (read-from-minibuffer
-                              (concat "New " what ": ") (match-string 1))))
+                              (format "New %s:"  what) (match-string 1))))
         (message "%s tag not found..." what))))))
 
 (defun rpm-change-n (tag)
@@ -1004,7 +1008,7 @@ WHAT is the tag used."
           (let ((default-directory (concat (rpm--topdir) "/SOURCES/")))
             (replace-match
              (concat tag number ": "
-                     (read-file-name (concat "New " tag number " file: ")
+                     (read-file-name (format "New %s%i file: " tag number)
                                      "" "" nil (match-string 1)))))
         (message "%s number \"%s\" not found..." tag number)))))
 
@@ -1151,8 +1155,10 @@ leave point at previous location."
            (y-or-n-p (format "Buffer %s modified, save it? " (buffer-name))))
       (save-buffer))
   (let ((rpm-buffer-name
-         (concat "*" rpm-spec-build-command " " buildoptions " "
-                 (file-name-nondirectory buffer-file-name) "*")))
+         (format "* %s %s %s*"
+                 rpm-spec-build-command
+                 buildoptions
+                 (file-name-nondirectory buffer-file-name))))
     (rpm-process-check rpm-buffer-name)
     (if (get-buffer rpm-buffer-name)
         (kill-buffer rpm-buffer-name))
@@ -1268,8 +1274,8 @@ If so, give the user the choice of aborting the process or the current
 command."
   (let ((process (get-buffer-process (get-buffer buffer))))
     (if (and process (eq (process-status process) 'run))
-        (if (yes-or-no-p (concat "Process `" (process-name process)
-                                 "' running.  Kill it? "))
+        (if (yes-or-no-p (format "Process `%s' running.  Kill it?"
+                                 (process-name process)))
             (delete-process process)
           (error "Cannot run two simultaneous processes")))))
 
@@ -1280,64 +1286,65 @@ command."
   (interactive)
   (setq rpm-spec-short-circuit (not rpm-spec-short-circuit))
   (rpm-update-mode-name)
-  (message (concat "Turned `--short-circuit' "
-                   (if rpm-spec-short-circuit "on" "off") ".")))
+  (message (format "Turned `--short-circuit' %s."
+                   (if rpm-spec-short-circuit "on" "off"))))
 
 (defun rpm-toggle-rmsource ()
   "Toggle `rpm-spec-rmsource'."
   (interactive)
   (setq rpm-spec-rmsource (not rpm-spec-rmsource))
   (rpm-update-mode-name)
-  (message (concat "Turned `--rmsource' "
-                   (if rpm-spec-rmsource "on" "off") ".")))
+  (message (format "Turned `--rmsource' %s."
+                   (if rpm-spec-rmsource "on" "off"))))
 
 (defun rpm-toggle-clean ()
   "Toggle `rpm-spec-clean'."
   (interactive)
   (setq rpm-spec-clean (not rpm-spec-clean))
   (rpm-update-mode-name)
-  (message (concat "Turned `--clean' "
-                   (if rpm-spec-clean "on" "off") ".")))
+  (message (format "Turned `--clean' %s."
+                   (if rpm-spec-clean "on" "off"))))
 
 (defun rpm-toggle-nobuild ()
   "Toggle `rpm-spec-nobuild'."
   (interactive)
   (setq rpm-spec-nobuild (not rpm-spec-nobuild))
   (rpm-update-mode-name)
-  (message (concat "Turned `" rpm-spec-nobuild-option "' "
-                   (if rpm-spec-nobuild "on" "off") ".")))
+  (message (format "Turned `%s' %s."
+                   rpm-spec-nobuild-option
+                   (if rpm-spec-nobuild "on" "off"))))
 
 (defun rpm-toggle-quiet ()
   "Toggle `rpm-spec-quiet'."
   (interactive)
   (setq rpm-spec-quiet (not rpm-spec-quiet))
   (rpm-update-mode-name)
-  (message (concat "Turned `--quiet' "
-                   (if rpm-spec-quiet "on" "off") ".")))
+  (message (format "Turned `--quiet' %s."
+                   (if rpm-spec-quiet "on" "off"))))
 
 (defun rpm-toggle-sign-gpg ()
   "Toggle `rpm-spec-sign-gpg'."
   (interactive)
   (setq rpm-spec-sign-gpg (not rpm-spec-sign-gpg))
   (rpm-update-mode-name)
-  (message (concat "Turned `--sign' "
-                   (if rpm-spec-sign-gpg "on" "off") ".")))
+  (message (format "Turned `--sign' %s."
+                   (if rpm-spec-sign-gpg "on" "off"))))
 
 (defun rpm-toggle-add-attr ()
   "Toggle `rpm-spec-add-attr'."
   (interactive)
   (setq rpm-spec-add-attr (not rpm-spec-add-attr))
   (rpm-update-mode-name)
-  (message (concat "Default add \"attr\" entry turned "
-                   (if rpm-spec-add-attr "on" "off") ".")))
+  (message (format "Default add \"attr\" entry turned %s."
+                   (if rpm-spec-add-attr "on" "off"))))
 
 (defun rpm-toggle-nodeps ()
   "Toggle `rpm-spec-nodeps'."
   (interactive)
   (setq rpm-spec-nodeps (not rpm-spec-nodeps))
   (rpm-update-mode-name)
-  (message (concat "Turned `--nodeps' "
-                   (if rpm-spec-nodeps "on" "off") ".")))
+  (message (format "Turned `--nodeps' %s."
+                   (if rpm-spec-nodeps "on" "off"))))
 
 (defun rpm-update-mode-name ()
   "Update `mode-name' according to values set."
@@ -1557,10 +1564,14 @@ Either by INCREMENT or 1 if not given."
 (defun rpm-about-rpm-spec-mode ()
   "About `rpm-spec-mode'."
   (interactive)
+  (let* ((file (or (macroexp-file-name) buffer-file-name))
+         (package-version (lm-version file))
+         (package-maintainer (car (lm-maintainers file))))
   (message
-   (concat "rpm-spec-mode version "
-           rpm-spec-mode-version
-           " by Stig Bjørlykke, <stig@bjorlykke.org>")))
+   (format "rpm-spec-mode version %s by %s <%s>"
+           package-version
+           (car package-maintainer)
+           (cdr package-maintainer)))))
 
 ;;;###autoload(add-to-list 'auto-mode-alist '("\\.spec\\(\\.in\\)?$" . rpm-spec-mode))
 
