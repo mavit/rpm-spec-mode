@@ -184,19 +184,17 @@ the package."
   :type 'boolean
   :group 'rpm-spec)
 
-(defcustom rpm-spec-user-full-name nil
-  "*Full name of the user.
-This is used in the change log and the Packager tag.  It defaults to the
-value returned by function `user-full-name'."
-  :type '(choice (const :tag "Use `user-full-name'" nil)
-                 string)
+(defcustom rpm-spec-user-full-name user-full-name
+  "Full name of the user in the change log and Packager tag.
+Can be either a string or a function."
+  :type '(choice function
+				 string)
   :group 'rpm-spec)
 
-(defcustom rpm-spec-user-mail-address nil
-  "*Email address of the user.
-This is used in the change log and the Packager tag.  It defaults to the
-value returned by function `user-mail-address'."
-  :type '(choice (const :tag "Use `user-mail-address'" nil)
+(defcustom rpm-spec-user-mail-address user-mail-address
+  "Email address of the user used in the change log and the Packager tag.
+Can be either a string or a function."
+  :type '(choice function
                  string)
   :group 'rpm-spec)
 
@@ -830,9 +828,12 @@ If `rpm-change-log-uses-utc' is nil, \"today\" means the local time zone."
 (defun rpm-goto-add-change-log-header ()
   "Find change log and add header (if needed) for today."
     (rpm-goto-section "changelog")
-    (let* ((address (or rpm-spec-user-mail-address
-                        user-mail-address))
-           (fullname (or rpm-spec-user-full-name (user-full-name)))
+    (let* ((address (if (functionp rpm-spec-user-mail-address)
+                        (funcall rpm-spec-user-mail-address)
+					  rpm-spec-user-mail-address))
+           (fullname (if (functionp rpm-spec-user-full-name)
+						 (funcall rpm-spec-user-full-name)
+					   rpm-spec-user-full-name))
            (system-time-locale "C")
            (string (concat "* " (rpm-change-log-date-string) " "
                            fullname " <" address ">"
@@ -1041,9 +1042,12 @@ WHAT is the tag used."
   "Insert Packager tag."
   (beginning-of-line)
   (insert (format "Packager: %s <%s>\n"
-                  (or rpm-spec-user-full-name (user-full-name))
-                  (or rpm-spec-user-mail-address
-                      user-mail-address))))
+                  (if (functionp rpm-spec-user-full-name)
+					  (funcall rpm-spec-user-full-name)
+					rpm-spec-user-full-name)
+                  (if (functionp rpm-spec-user-mail-address)
+                      (funcall rpm-spec-user-mail-address)
+					rpm-spec-user-mail-address))))
 
 (defun rpm-change-packager ()
   "Update Packager tag."
